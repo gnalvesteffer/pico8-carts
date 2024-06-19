@@ -1,6 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
+debug=""
 tile_size=10
 cursor_x=4
 cursor_y=4
@@ -80,27 +81,83 @@ function update_valid_moves()
 	
 	--show valid moves
 	if selected_x~=nil and selected_y~=nil then
-
+		local selected_piece=grid[selected_x][selected_y]
+		if selected_piece==7 or selected_piece==9 or selected_piece==11 then
+			--check to the right
+			for x=selected_x+1,8 do
+				if grid[x][selected_y]==7 or grid[x][selected_y]==9 or grid[x][selected_y]==11 then
+					break
+				end
+				grid[x][selected_y]=13
+			end
+			--check to the left
+			for x=selected_x-1,0,-1 do
+				if grid[x][selected_y]==7 or grid[x][selected_y]==9 or grid[x][selected_y]==11 then
+					break
+				end
+				grid[x][selected_y]=13
+			end
+			--check to the top
+			for y=selected_y-1,0,-1 do
+				if grid[selected_x][y]==7 or grid[selected_x][y]==9 or grid[selected_x][y]==11 then
+					break
+				end
+				grid[selected_x][y]=13
+			end
+			--check to the bottom
+			for y=selected_y+1,8 do
+				if grid[selected_x][y]==7 or grid[selected_x][y]==9 or grid[selected_x][y]==11 then
+					break
+				end
+				grid[selected_x][y]=13
+			end
+		end
 	end
 end
 
 function update_input()
 	for i=0,5 do
 		input[i].pressed=false
+		input[i].released=false
 		local prev_down=input[i].down
 		if btn(i,0) then
 			input[i].down=true
+			if not prev_down then
+				input[i].pressed=true
+			end
 		else
 			input[i].down=false
 			if prev_down then
-				input[i].pressed=true
+				input[i].released=true
 			end
 		end
 	end
 end
 
+function on_selection_changed(
+	prev_x,
+	prev_y
+)
+	--piece move logic
+	if selected_x~=nil and selected_y~=nil and prev_x~=nil and prev_y~=nil then
+		local prev_piece=grid[prev_x][prev_y]
+		local cur_piece=grid[selected_x][selected_y]
+		if prev_piece==7 or prev_piece==9 or prev_piece==11 then
+			--check if selecting valid move position
+			if cur_piece==13 then
+				grid[selected_x][selected_y]=prev_piece
+				grid[prev_x][prev_y]=nil
+				selected_x=nil
+				selected_y=nil
+			end
+		end
+	end 
+end
+
 function update_cursor()
 	if input[4].pressed then
+		local prev_selected_x=selected_x
+		local prev_selected_y=selected_y
 		if cursor_x==selected_x and cursor_y==selected_y then
 			selected_x=nil
 			selected_y=nil
@@ -108,6 +165,10 @@ function update_cursor()
 			selected_x=cursor_x
 			selected_y=cursor_y
 		end
+		on_selection_changed(
+			prev_selected_x,
+			prev_selected_y
+		)
 	end
 
 	if input[0].pressed then
@@ -138,6 +199,7 @@ function _init()
 		input[i]={}
 		input[i].down=false
 		input[i].pressed=false
+		input[i].released=false
 	end
 	
 	--init grid
@@ -187,6 +249,7 @@ end
 function _draw()
 	cls()
 	draw_board()
+	print(debug)
 end
 __gfx__
 00000000200000000200000020000000020000002000000002000000000000000000000000000000000000000000000000000000000000000000000000000000
