@@ -423,11 +423,15 @@ function draw_ui()
 	rectfill(0,128,128,128-20,1)
 	line(0,128-21,128,128-21,team_color)
 	
+	--signature
+	printfx("tablut",2,128-16,7)
+	printfx("by xorberax",2,128-9,6)
+	
 	--current team
 	if is_defender_turn then
-		printfx("defender's turn",64,128-12,team_color)
+		printfx("defender's turn",67,128-12,team_color)
 	else
-		printfx("attacker's turn",64,128-12,team_color)
+		printfx("attacker's turn",67,128-12,team_color)
 	end
 end
 
