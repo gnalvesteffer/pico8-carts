@@ -22,6 +22,9 @@ function clamp(a,b,c)
 end
 
 function draw_board()
+	--border
+	rect(-2,-2,83,83,1)
+	
 	for x=0,8 do
 		for y=0,8 do
 			local sprite=1
@@ -359,10 +362,41 @@ function _init()
 	grid[4][6]=7
 end
 
+function printfx(str,x,y,col)
+	print(str,x+1,y+1,0) --shadow
+	print(str,x,y,col)
+end
+
+function draw_ui()
+	print(debug)
+	
+	local team_color=8
+	if is_defender_turn then
+		team_color=12
+	end
+	
+	--bottom bar
+	rectfill(0,128,128,128-20,1)
+	line(0,128-21,128,128-21,team_color)
+	
+	--current team
+	if is_defender_turn then
+		printfx("defender's turn",64,128-12,team_color)
+	else
+		printfx("attacker's turn",64,128-12,team_color)
+	end
+end
+
 function _draw()
 	cls()
+	
+	--center board
+	camera(-4.5*tile_size/2,-10)
 	draw_board()
-	print(debug)
+	
+	--recenter ui
+	camera(0,0)
+	draw_ui()
 end
 __gfx__
 00000000200000000200000020000000020000002000000002000000000000000000000000000000000000000000000000000000000000000000000000000000
