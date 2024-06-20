@@ -9,6 +9,7 @@ selected_x=nil
 selected_y=nil
 input={}
 grid={}
+is_defender_turn=false
 
 function clamp(a,b,c)
 	if a < b then
@@ -166,7 +167,19 @@ function can_kill(
 end
 
 function kill(x,y)
+	local is_king=grid[x][y]==9
 	grid[x][y]=nil
+	if is_king then
+		on_attacker_win()
+	end
+end
+
+function on_defender_win()
+	_init()
+end
+
+function on_attacker_win()
+	_init()
 end
 
 function on_pawn_moved(x,y)
@@ -186,6 +199,13 @@ function on_pawn_moved(x,y)
 	if can_kill(x,y,x,y+1,x,y+2) then
 		kill(x,y+1)
 	end
+	
+	is_defender_turn=not is_defender_turn
+	
+	local pawn=grid[x][y]
+	if pawn==9 and (x==0 or x==8 or y==0 or y==8) then --is king
+		on_defender_win()
+	end
 end
 
 function on_selection_changed(
@@ -196,7 +216,7 @@ function on_selection_changed(
 	if selected_x~=nil and selected_y~=nil and prev_x~=nil and prev_y~=nil then
 		local prev_piece=grid[prev_x][prev_y]
 		local cur_piece=grid[selected_x][selected_y]
-		if prev_piece==7 or prev_piece==9 or prev_piece==11 then
+		if prev_piece==7 or prev_piece==9 or prev_piece==11 then			
 			--check if selecting valid move position
 			if cur_piece==13 then
 				grid[selected_x][selected_y]=prev_piece
@@ -209,6 +229,18 @@ function on_selection_changed(
 	end
 end
 
+function can_select(x,y)
+	local piece=grid[x][y]
+	if piece==nil then
+		return false
+	end
+	if piece==13 then
+		return true
+	end
+	local is_defender=is_defense(piece)
+	return (is_defender_turn and is_defender) or (not is_defender_turn and not is_defender)
+end
+
 function update_cursor()
 	if input[4].pressed then --select
 		local prev_selected_x=selected_x
@@ -216,7 +248,7 @@ function update_cursor()
 		if cursor_x==selected_x and cursor_y==selected_y then
 			selected_x=nil
 			selected_y=nil
-		else
+		elseif can_select(cursor_x,cursor_y) then
 			selected_x=cursor_x
 			selected_y=cursor_y
 		end
@@ -250,6 +282,10 @@ end
 
 function _init()
 	--init input
+	cursor_x=4
+	cursor_y=4
+	selected_x=nil
+	selected_y=nil
 	for i=0,5 do
 		input[i]={}
 		input[i].down=false
