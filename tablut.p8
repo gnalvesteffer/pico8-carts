@@ -46,11 +46,13 @@ function draw_board()
 		end
 	end
 	
+	local cursor_sprite=32
+	if is_defender_turn then
+		cursor_sprite=34
+	end
+	
 	--draw cursor
-	draw_piece(32,cursor_x,cursor_y)
-
- --draw selected
- draw_piece(34,selected_x,selected_y)
+	draw_piece(cursor_sprite,cursor_x,cursor_y)
 end
 
 function draw_piece(
@@ -292,6 +294,9 @@ function _init()
 		input[i].pressed=false
 		input[i].released=false
 	end
+	
+	--reset turn
+	is_defender_turn=false
 	
 	--init grid
 	for x=0,8 do
